@@ -1,0 +1,8 @@
+version: '3.3'
+services:
+  run:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+    ports:
+      - '3306:3306'

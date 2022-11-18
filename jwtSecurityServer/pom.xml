@@ -8,7 +8,7 @@
         <version>2.7.5</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>nolli.backend</groupId>
+    <groupId>security.backend</groupId>
     <artifactId>jwtSecurityServer</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>jwtSecurityServer</name>

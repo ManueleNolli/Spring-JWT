@@ -1,4 +1,4 @@
-package nolli.backend.jwtsecurityserver;
+package security.backend.jwtsecurityserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

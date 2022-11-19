@@ -6,6 +6,10 @@ import lombok.Data;
 
 import javax.persistence.*;
 
+/**
+ * Class that will be in the db
+ */
+// FIXME: change "Id" to username
 @Entity
 @Data
 @Table(name = "user")

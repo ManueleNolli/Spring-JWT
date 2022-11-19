@@ -1,6 +1,5 @@
 package security.backend.jwtsecurityserver.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,20 +13,23 @@ import security.backend.jwtsecurityserver.repository.UserRepository;
 
 import java.util.List;
 
+/**
+ * User service
+ */
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-    private UserRepository userDao;
-    private PasswordEncoder bcryptEncoder;
+    private final UserRepository repository;
+    private final PasswordEncoder bcryptEncoder;
 
-    public CustomUserDetailsService(UserRepository userDao, PasswordEncoder bcryptEncoder) {
-        this.userDao = userDao;
+    public CustomUserDetailsService(UserRepository repository, PasswordEncoder bcryptEncoder) {
+        this.repository = repository;
         this.bcryptEncoder = bcryptEncoder;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         List<SimpleGrantedAuthority> roles;
-        UserDAO user = userDao.findByUsername(username);
+        UserDAO user = repository.findByUsername(username);
         if (user != null) {
             roles = List.of(new SimpleGrantedAuthority(user.getRole()));
             return new User(user.getUsername(), user.getPassword(), roles);
@@ -40,6 +42,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         newUser.setUsername(user.getUsername());
         newUser.setPassword(bcryptEncoder.encode(user.getPassword()));
         newUser.setRole(user.getRole());
-        return userDao.save(newUser);
+        return repository.save(newUser);
     }
 }

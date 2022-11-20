@@ -1,6 +1,5 @@
 package security.backend.jwtsecurityserver.model;
 
-
 import lombok.Data;
 
 /**

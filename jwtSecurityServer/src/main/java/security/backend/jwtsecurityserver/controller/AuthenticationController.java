@@ -7,7 +7,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import security.backend.jwtsecurityserver.model.AuthenticationRequest;
 import security.backend.jwtsecurityserver.model.AuthenticationResponse;
 import security.backend.jwtsecurityserver.model.UserDAO;
@@ -18,11 +21,9 @@ import security.backend.jwtsecurityserver.service.JwtService;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 @RestController
 public class AuthenticationController {
-
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService userDetailsService;
     private final JwtService jwtService;
@@ -67,10 +68,6 @@ public class AuthenticationController {
     }
 
     public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
-        for (Entry<String, Object> entry : claims.entrySet()) {
-            expectedMap.put(entry.getKey(), entry.getValue());
-        }
-        return expectedMap;
+        return new HashMap<>(claims);
     }
 }

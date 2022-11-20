@@ -30,11 +30,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         List<SimpleGrantedAuthority> roles;
         UserDAO user = repository.findByUsername(username);
-        if (user != null) {
-            roles = List.of(new SimpleGrantedAuthority(user.getRole()));
-            return new User(user.getUsername(), user.getPassword(), roles);
-        }
-        throw new UsernameNotFoundException("User not found with the name " + username);
+        if (user == null)
+            throw new UsernameNotFoundException("User not found with the name " + username);
+
+        roles = List.of(new SimpleGrantedAuthority(user.getRole()));
+        return new User(user.getUsername(), user.getPassword(), roles);
     }
 
     public UserDAO save(UserDTO user) {

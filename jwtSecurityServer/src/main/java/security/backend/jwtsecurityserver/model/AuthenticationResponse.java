@@ -6,9 +6,8 @@ import lombok.Data;
 /**
  * Response after authentication
  */
-@Data @AllArgsConstructor
+@Data
+@AllArgsConstructor
 public class AuthenticationResponse {
-
-	private String token;
-
+    private String token;
 }

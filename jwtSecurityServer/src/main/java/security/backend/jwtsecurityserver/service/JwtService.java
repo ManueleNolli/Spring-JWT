@@ -12,6 +12,7 @@ import java.util.*;
 
 @Service
 public class JwtService {
+    private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS512;
     private String secret;
     private int jwtExpirationInMs;
     private int refreshExpirationDateInMs;
@@ -33,15 +34,12 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
 
-        if (roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+        if (roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
             claims.put("isAdmin", true);
-        }
-        if (roles.contains(new SimpleGrantedAuthority("ROLE_USER"))) {
+        if (roles.contains(new SimpleGrantedAuthority("ROLE_USER")))
             claims.put("isUser", true);
-        }
 
         return doGenerateToken(claims, userDetails.getUsername());
     }
@@ -49,19 +47,16 @@ public class JwtService {
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
-
+                .signWith(SIGNATURE_ALGORITHM, secret).compact();
     }
 
     public String doGenerateRefreshToken(Map<String, Object> claims, String subject) {
-
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationDateInMs))
-                .signWith(SignatureAlgorithm.HS512, secret).compact();
-
+                .signWith(SIGNATURE_ALGORITHM, secret).compact();
     }
 
-    public boolean validateToken(String authToken) {
+    public boolean validateToken(String authToken) throws BadCredentialsException, ExpiredJwtException {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(authToken);
             return true;
@@ -75,26 +70,18 @@ public class JwtService {
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
         return claims.getSubject();
-
     }
 
     public List<SimpleGrantedAuthority> getRolesFromToken(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
-
         List<SimpleGrantedAuthority> roles = null;
-
+        Claims claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
         Boolean isAdmin = claims.get("isAdmin", Boolean.class);
         Boolean isUser = claims.get("isUser", Boolean.class);
-
-        if (isAdmin != null && isAdmin) {
+        if (isAdmin != null && isAdmin)
             roles = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        }
-
-        if (isUser != null && isAdmin) {
+        if (isUser != null && isUser)
             roles = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        }
+
         return roles;
-
     }
-
 }

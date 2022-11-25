@@ -1,11 +1,14 @@
 package security.backend.jwtsecurityserver.model;
 
-import lombok.Data;
+import lombok.*;
 
 /**
  * Class used for communication with client
  */
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserDTO {
     private String username;
     private String password;

@@ -1,16 +1,18 @@
 package security.backend.jwtsecurityserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 
 /**
  * Class that will be in the db
  */
-// FIXME: change "Id" to username
 @Entity
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "user")
 public class UserDAO {
     @Id

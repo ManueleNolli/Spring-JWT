@@ -56,7 +56,6 @@ public class AuthenticationController {
         return ResponseEntity.ok(userDetailsService.save(user));
     }
 
-    //TODO to understand
     @GetMapping(value = "/refreshtoken")
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         // From the HttpRequest get the claims

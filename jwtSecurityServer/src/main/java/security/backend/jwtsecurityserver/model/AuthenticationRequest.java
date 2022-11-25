@@ -1,11 +1,14 @@
 package security.backend.jwtsecurityserver.model;
 
-import lombok.Data;
+import lombok.*;
 
 /**
  * Expected information for authentication
  */
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class AuthenticationRequest {
     private String username;
     private String password;

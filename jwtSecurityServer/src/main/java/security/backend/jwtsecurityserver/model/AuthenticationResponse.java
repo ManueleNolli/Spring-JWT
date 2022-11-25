@@ -1,13 +1,14 @@
 package security.backend.jwtsecurityserver.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 /**
  * Response after authentication
  */
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthenticationResponse {
     private String token;
 }

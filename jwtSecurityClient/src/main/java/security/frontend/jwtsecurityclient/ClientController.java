@@ -43,6 +43,21 @@ public class ClientController {
         return "registration";
     }
 
+    @GetMapping("/error")
+    public String error() {
+        return "error";
+    }
+
+    @GetMapping("/userPage")
+    public String userPage() {
+        return "userPage";
+    }
+
+    @GetMapping("/adminPage")
+    public String adminPage() {
+        return "adminPage";
+    }
+
     @PostMapping("/registration")
     public String registration(User user) throws JsonProcessingException {
         String response = null;

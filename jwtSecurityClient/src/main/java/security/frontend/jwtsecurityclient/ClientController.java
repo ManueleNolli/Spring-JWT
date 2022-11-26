@@ -17,7 +17,8 @@ public class ClientController {
 
     private static final String REGISTRATION_URL = "http://localhost:8080/register";
     private static final String AUTHENTICATION_URL = "http://localhost:8080/authenticate";
-    private static final String HELLO_URL = "redirect:/home";
+    private static final String HOME_URL = "redirect:/home";
+    private static final String ERROR_URL = "redirect:/error";
     private static final String REFRESH_TOKEN = "http://localhost:8080/refreshtoken";
     private String token;
 
@@ -58,12 +59,12 @@ public class ClientController {
                     registrationEntity, String.class);
 
             if (registrationResponse.getStatusCode().equals(HttpStatus.OK)) {
-                response = getData();
+                response = HOME_URL;
             } else {
-                response = "redirect:/error";
+                response = ERROR_URL;
             }
         } catch (Exception e) {
-            response = "redirect:/error";
+            response = ERROR_URL;
         }
         return response;
     }
@@ -86,9 +87,9 @@ public class ClientController {
             // if the authentication is successful
             if (authenticationResponse.getStatusCode().equals(HttpStatus.OK)) {
                 token = "Bearer " + authenticationResponse.getBody().getToken();
-                response = getData();
+                response = HOME_URL;
             } else {
-                response = "redirect:/error";
+                response = ERROR_URL;
             }
         } catch (Exception e) {
             // check if exception is due to ExpiredJwtException
@@ -96,9 +97,9 @@ public class ClientController {
                 // Refresh Token
                 refreshToken();
                 // try again with refresh token
-                response = getData();
+                response = HOME_URL;
             }else {
-                response = "redirect:/error";
+                response = ERROR_URL;
             }
         }
         return response;
@@ -111,7 +112,7 @@ public class ClientController {
         headers.set("Authorization", token);
         HttpEntity<String> jwtEntity = new HttpEntity<String>(headers);
         // Use Token to get Response
-        ResponseEntity<String> helloResponse = restTemplate.exchange(HELLO_URL, HttpMethod.GET, jwtEntity,
+        ResponseEntity<String> helloResponse = restTemplate.exchange(HOME_URL, HttpMethod.GET, jwtEntity,
                 String.class);
         if (helloResponse.getStatusCode().equals(HttpStatus.OK)) {
             response = helloResponse.getBody();

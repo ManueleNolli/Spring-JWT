@@ -17,7 +17,7 @@
         <div class="container"><a class="navbar-brand" href="#">Home Page</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse d-flex flex-row-reverse" id="navbarSupportedContent">
-                <form th:action="@{/logout}" method="post">
+                <form th:action="@{'/'}" method="get">
                     <input class="btn btn-outline-light" type="submit" value="Logout"/>
                 </form>
             </div>
@@ -28,10 +28,10 @@
             <div class="text-center mt-5">
                 <h1 th:inline="text">Hello [[${#httpServletRequest.remoteUser}]]!</h1>
                 <p class="lead" sec:authorize="isAuthenticated()">This content is only shown to authenticated users.</p>
-                <div sec:authorize="hasAuthority('ADMIN')"> <!-- <div sec:authorize="hasRole('ROLE_ADMIN')"> -->
-                    <span sec:authentication="name">Bob, </span><p>You are an admin</p>
+                <div sec:authorize="hasRole('ROLE_ADMIN')"> <!-- <div sec:authorize="hasRole('ROLE_ADMIN')"> -->
+                    <span sec:authentication="username">Bob, </span><p>You are an admin</p>
                 </div>
-                <div sec:authorize="hasAuthority('USER')"> <!-- <div sec:authorize="hasRole('ROLE_USER')"> -->
+                <div sec:authorize="hasRole('ROLE_USER')"> <!-- <div sec:authorize="hasRole('ROLE_USER')"> -->
                     <span sec:authentication="name">Bob, </span><p>You are an user</p>
                 </div>
             </div>

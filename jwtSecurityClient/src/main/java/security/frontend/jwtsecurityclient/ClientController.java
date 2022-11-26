@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.RestTemplate;
+import security.frontend.jwtsecurityclient.Model.ResponseToken;
 import security.frontend.jwtsecurityclient.Model.User;
 
 @Controller
@@ -16,15 +17,17 @@ public class ClientController {
 
     private static final String REGISTRATION_URL = "http://localhost:8080/register";
     private static final String AUTHENTICATION_URL = "http://localhost:8080/authenticate";
-    private static final String HELLO_URL = "http://localhost:8080/helloadmin";
+    private static final String HELLO_URL = "redirect:/home";
     private static final String REFRESH_TOKEN = "http://localhost:8080/refreshtoken";
+    private String token;
 
     public ClientController(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
     @GetMapping("/")
-    public String login() {
+    public String login(Model model) {
+        model.addAttribute("user", new User());
         return "login";
     }
 
@@ -41,6 +44,7 @@ public class ClientController {
 
     @PostMapping("/registration")
     public String registration(User user) throws JsonProcessingException {
+        String response = null;
         // convert the user registration object to JSON
         String registrationBody = getBody(user);
 
@@ -54,12 +58,77 @@ public class ClientController {
                     registrationEntity, String.class);
 
             if (registrationResponse.getStatusCode().equals(HttpStatus.OK)) {
-                return "redirect:/";
+                response = getData();
             } else {
-                return "redirect:/error";
+                response = "redirect:/error";
             }
         } catch (Exception e) {
-            return "redirect:/error";
+            response = "redirect:/error";
+        }
+        return response;
+    }
+
+    @PostMapping("/login")
+    public String login(User user) throws JsonProcessingException {
+        String response = null;
+        // convert the user registration object to JSON
+        String authenticationBody = getBody(user);
+
+        // create headers specifying that it is JSON request
+        HttpHeaders authenticationHeaders = getHeaders();
+        HttpEntity<String> authenticationEntity = new HttpEntity<String>(authenticationBody, authenticationHeaders);
+
+        try {
+            // Authenticate User and get JWT
+            ResponseEntity<ResponseToken> authenticationResponse = restTemplate.exchange(AUTHENTICATION_URL,
+                    HttpMethod.POST, authenticationEntity, ResponseToken.class);
+
+            // if the authentication is successful
+            if (authenticationResponse.getStatusCode().equals(HttpStatus.OK)) {
+                token = "Bearer " + authenticationResponse.getBody().getToken();
+                response = getData();
+            } else {
+                response = "redirect:/error";
+            }
+        } catch (Exception e) {
+            // check if exception is due to ExpiredJwtException
+            if (e.getMessage().contains("io.jsonwebtoken.ExpiredJwtException")) {
+                // Refresh Token
+                refreshToken();
+                // try again with refresh token
+                response = getData();
+            }else {
+                response = "redirect:/error";
+            }
+        }
+        return response;
+    }
+
+    private String getData() {
+        String response = null;
+
+        HttpHeaders headers = getHeaders();
+        headers.set("Authorization", token);
+        HttpEntity<String> jwtEntity = new HttpEntity<String>(headers);
+        // Use Token to get Response
+        ResponseEntity<String> helloResponse = restTemplate.exchange(HELLO_URL, HttpMethod.GET, jwtEntity,
+                String.class);
+        if (helloResponse.getStatusCode().equals(HttpStatus.OK)) {
+            response = helloResponse.getBody();
+        }
+        return response;
+    }
+
+    private void refreshToken() {
+        HttpHeaders headers = getHeaders();
+        headers.set("Authorization", token);
+        headers.set("isRefreshToken", "true");
+        HttpEntity<String> jwtEntity = new HttpEntity<String>(headers);
+        // Use Token to get Response
+        ResponseEntity<ResponseToken> refreshTokenResponse = restTemplate.exchange(REFRESH_TOKEN, HttpMethod.GET, jwtEntity,
+                ResponseToken.class);
+        if (refreshTokenResponse.getStatusCode().equals(HttpStatus.OK)) {
+            token = "Bearer " +refreshTokenResponse.getBody().getToken();
         }
     }
 

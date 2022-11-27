@@ -15,14 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfiguration {
-    private final CustomJwtAuthenticationFilter customJwtAuthenticationFilter;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
-    public SpringSecurityConfiguration(CustomJwtAuthenticationFilter customJwtAuthenticationFilter, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
-        this.customJwtAuthenticationFilter = customJwtAuthenticationFilter;
-        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-    }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -44,17 +36,8 @@ public class SpringSecurityConfiguration {
         // Authorize requests
         // Each matcher is considered in the order they were declared
         http.authorizeRequests()
-                .antMatchers("/helloadmin").hasRole("ADMIN")
-                .antMatchers("/hellouser").hasAnyRole("USER", "ADMIN")
                 .antMatchers("/authenticate", "/register").permitAll()
                 .anyRequest().authenticated();
-        // Define the exception handler for unauthorized requests
-        http.exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint);
-        // Disable session creation
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        // Add a filter to validate the tokens with every request
-        http.addFilterBefore(customJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        // Return the security filter chain
         return http.build();
     }
 }

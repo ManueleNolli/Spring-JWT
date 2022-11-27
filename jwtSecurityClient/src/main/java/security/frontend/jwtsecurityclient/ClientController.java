@@ -117,7 +117,7 @@ public class ClientController {
 
             token = Objects.requireNonNull(loginResponse.getBody()).getToken();
             if (loginResponse.getStatusCode().equals(HttpStatus.OK)) {
-                Cookie jwtTokenCookie = new Cookie("Authorization",token );
+                Cookie jwtTokenCookie = new Cookie("Authorization", token);
                 jwtTokenCookie.setHttpOnly(true);
                 jwtTokenCookie.setSecure(true);
                 jwtTokenCookie.setPath("/");
@@ -133,16 +133,16 @@ public class ClientController {
         return response;
     }
 
-        private String getToken(HttpServletRequest request) {
-            if (request.getCookies() != null) {
-                for (Cookie cookie : request.getCookies()) {
-                    if (cookie.getName().equals("Authorization")) {
-                        token = cookie.getValue();
-                    }
+    private String getToken(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("Authorization")) {
+                    token = cookie.getValue();
                 }
             }
-            return token;
         }
+        return token;
+    }
 
 /*    private String getData() {
         String response = null;

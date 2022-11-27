@@ -1,5 +1,7 @@
 package security.backend.jwtsecurityserver.controller;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,10 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import security.backend.jwtsecurityserver.model.AuthenticationRequest;
-import security.backend.jwtsecurityserver.model.AuthenticationResponse;
-import security.backend.jwtsecurityserver.model.UserDAO;
-import security.backend.jwtsecurityserver.model.UserDTO;
+import security.backend.jwtsecurityserver.model.*;
 import security.backend.jwtsecurityserver.service.CustomUserDetailsService;
 import security.backend.jwtsecurityserver.service.JwtService;
 
@@ -28,10 +27,11 @@ public class AuthenticationController {
     private final CustomUserDetailsService userDetailsService;
     private final JwtService jwtService;
 
-    public AuthenticationController(AuthenticationManager authenticationManager, CustomUserDetailsService userDetailsService, JwtService jwtUtil) {
+
+    public AuthenticationController(AuthenticationManager authenticationManager, CustomUserDetailsService userDetailsService, JwtService jwtService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
-        this.jwtService = jwtUtil;
+        this.jwtService = jwtService;
     }
 
     @PostMapping(value = "/authenticate")
@@ -46,8 +46,12 @@ public class AuthenticationController {
         }
 
         UserDetails userdetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-        String token = jwtService.generateToken(userdetails);
-        return ResponseEntity.ok(new AuthenticationResponse(token));
+
+        String accessToken = jwtService.generateToken(userdetails,"access");
+        String refreshToken = jwtService.generateToken(userdetails,"refresh");
+        AuthenticationResponse authenticationResponse = new AuthenticationResponse(accessToken, refreshToken);
+        System.out.println(authenticationResponse.getAccessToken() + " " + authenticationResponse.getRefreshToken());
+        return ResponseEntity.ok(authenticationResponse);
     }
 
     @PostMapping(value = "/register")
@@ -55,17 +59,16 @@ public class AuthenticationController {
         return ResponseEntity.ok(userDetailsService.save(user));
     }
 
-    @GetMapping(value = "/refreshtoken")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
-        // From the HttpRequest get the claims
-        DefaultClaims claims = (DefaultClaims) request.getAttribute("claims");
 
-        Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
-        String token = jwtService.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
-        return ResponseEntity.ok(new AuthenticationResponse(token));
+    @PostMapping(value = "/refreshtoken")
+    public ResponseEntity<RequestRefreshToken> refreshToken(@RequestBody RequestRefreshToken refreshToken) {
+        Claims claims = Jwts.parser().setSigningKey("secret").parseClaimsJws(refreshToken.getRefreshToken()).getBody();
+
+        String username = claims.getSubject();
+
+        RequestRefreshToken response = new RequestRefreshToken();
+        response.setRefreshToken(jwtService.generateToken(userDetailsService.loadUserByUsername(username),"access"));
+        return ResponseEntity.ok(response);
     }
 
-    public Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
-        return new HashMap<>(claims);
-    }
 }

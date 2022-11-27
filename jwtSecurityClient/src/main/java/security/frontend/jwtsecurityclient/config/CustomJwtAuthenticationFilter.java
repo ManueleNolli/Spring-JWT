@@ -1,5 +1,6 @@
 package security.frontend.jwtsecurityclient.config;
 
+import com.fasterxml.jackson.databind.ser.std.StdArraySerializers;
 import io.jsonwebtoken.*;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,65 +33,73 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             // JWT Token is in the form "Bearer token". Remove Bearer word and
             // get  only the Token
-            String jwtToken = extractJwtFromRequest(request);
+            String jwtAccessToken = extractAccessTokenFromRequest(request);
+            String jwtRefreshToken = extractRefreshTokenFromRequest(request);
 
-            if (StringUtils.hasText(jwtToken) && validateToken(jwtToken)) {
-                UserDetails userDetails = new User(getUsernameFromToken(jwtToken), "",
-                        getRolesFromToken(jwtToken));
+            if (StringUtils.hasText(jwtRefreshToken) && validateToken(jwtRefreshToken)) {
 
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                // After setting the Authentication in the context, we specify
-                // that the current user is authenticated. So it passes the
-                // Spring Security Configurations successfully.
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                //if the access token is null (expired), but the refresh token is valid, then we need to generate new access token
+                if (jwtAccessToken == null) {
+                    request.setAttribute("isRefreshNeeded", true);
+                    request.setAttribute("refreshToken", jwtRefreshToken);
+
+                    //allow the refresh of the access token
+                    UserDetails userDetails = new User(getUsernameFromToken(jwtRefreshToken), "",
+                            getRolesFromToken(jwtRefreshToken));
+
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    // After setting the Authentication in the context, we specify
+                    // that the current user is authenticated. So it passes the
+                    // Spring Security Configurations successfully.
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                } else {
+                    UserDetails userDetails = new User(getUsernameFromToken(jwtAccessToken), "",
+                            getRolesFromToken(jwtAccessToken));
+
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    // After setting the Authentication in the context, we specify
+                    // that the current user is authenticated. So it passes the
+                    // Spring Security Configurations successfully.
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+                }
+            } else if (jwtRefreshToken != null && validateToken(jwtRefreshToken)) {
+                request.setAttribute("exception", new ExpiredJwtException(null, null, "Refresh token is expired"));
             } else {
                 System.out.println("Cannot set the Security Context");
             }
-        } catch (ExpiredJwtException ex) {
-            String isRefreshToken = request.getHeader("isRefreshToken");
-            String requestURL = request.getRequestURL().toString();
-            // allow for Refresh Token creation if following conditions are true.
-            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshtoken")) {
-                allowForRefreshToken(ex, request);
-            } else
-                request.setAttribute("exception", ex);
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
         }
         chain.doFilter(request, response);
     }
 
-    private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
-        // create a UsernamePasswordAuthenticationToken with null values.
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                null, null, null);
-        // After setting the Authentication in the context, we specify
-        // that the current user is authenticated. So it passes the
-        // Spring Security Configurations successfully.
-        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-        // Set the claims so that in controller we will be using it to create
-        // new JWT
-        request.setAttribute("claims", ex.getClaims());
-    }
-
-    private String extractJwtFromRequest(HttpServletRequest request) {
-        /*String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken)) {// && bearerToken.startsWith("Bearer ")) {
-            return bearerToken;//.substring(7);
-        }
-        return null;*/
+    private String extractAccessTokenFromRequest(HttpServletRequest request) {
         String token = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if (cookie.getName().equals("Authorization")) {
+                if (cookie.getName().equals("accessToken")) {
                     token = cookie.getValue();
                 }
             }
         }
         return token;
-
     }
+
+    private String extractRefreshTokenFromRequest(HttpServletRequest request) {
+        String token = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("refreshToken")) {
+                    token = cookie.getValue();
+                }
+            }
+        }
+        return token;
+    }
+
     private String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey("secret").parseClaimsJws(token).getBody();
         return claims.getSubject();
@@ -116,7 +125,7 @@ public class CustomJwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (SignatureException | MalformedJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
             throw new BadCredentialsException("INVALID_CREDENTIALS", ex);
         } catch (ExpiredJwtException ex) {
-            throw ex;
+            return false;
         }
     }
 }

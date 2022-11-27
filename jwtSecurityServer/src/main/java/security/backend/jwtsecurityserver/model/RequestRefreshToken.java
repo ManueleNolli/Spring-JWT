@@ -1,16 +1,14 @@
-package security.frontend.jwtsecurityclient.Model;
+package security.backend.jwtsecurityserver.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseToken {
-    private String accessToken;
+public class RequestRefreshToken {
     private String refreshToken;
-
 }

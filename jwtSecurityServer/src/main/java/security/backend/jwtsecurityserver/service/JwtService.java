@@ -32,7 +32,7 @@ public class JwtService {
         this.refreshExpirationDateInMs = refreshExpirationDateInMs;
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails, String type) {
         Map<String, Object> claims = new HashMap<>();
         Collection<? extends GrantedAuthority> roles = userDetails.getAuthorities();
 
@@ -40,8 +40,10 @@ public class JwtService {
             claims.put("isAdmin", true);
         if (roles.contains(new SimpleGrantedAuthority("ROLE_USER")))
             claims.put("isUser", true);
-
-        return doGenerateToken(claims, userDetails.getUsername());
+        if(type.equals("access"))
+            return doGenerateToken(claims, userDetails.getUsername());
+        else
+            return doGenerateRefreshToken(claims, userDetails.getUsername());
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {

@@ -46,7 +46,9 @@ public class SpringSecurityConfiguration {
                 .antMatchers("/adminPage").hasRole("ADMIN")
                 .antMatchers("/home","/userPage").hasAnyRole("USER", "ADMIN")
                 .antMatchers("/registration","/","/login","/error").permitAll()
+                .antMatchers("/css/**").permitAll()
                 .anyRequest().authenticated();
+
         // Define the exception handler for unauthorized requests
         http.exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint);
         // Disable session creation

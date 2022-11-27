@@ -5,12 +5,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseToken {
-    private String accessToken;
+public class RequestRefreshToken {
     private String refreshToken;
 
 }

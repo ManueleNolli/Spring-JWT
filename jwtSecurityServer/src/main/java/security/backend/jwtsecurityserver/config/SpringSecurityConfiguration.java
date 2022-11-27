@@ -27,7 +27,6 @@ public class SpringSecurityConfiguration {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        //TODO to understand
 
         // Enable CORS support
         http.cors();
@@ -36,7 +35,7 @@ public class SpringSecurityConfiguration {
         // Authorize requests
         // Each matcher is considered in the order they were declared
         http.authorizeRequests()
-                .antMatchers("/authenticate", "/register").permitAll()
+                .antMatchers("/authenticate", "/register", "/refreshtoken").permitAll()
                 .anyRequest().authenticated();
         return http.build();
     }

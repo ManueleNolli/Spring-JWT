@@ -26,9 +26,12 @@ import java.util.*;
 public class ClientController {
     private final RestTemplate restTemplate;
 
-    private static final String REGISTRATION_URL = "http://localhost:8080/register";
-    private static final String AUTHENTICATION_URL = "http://localhost:8080/authenticate";
-    private static final String REFRESH_TOKEN = "http://localhost:8080/refreshtoken";
+    @Value("${backend.url}/register")
+    private String REGISTRATION_URL;
+    @Value("${backend.url}/authenticate")
+    private String AUTHENTICATION_URL;
+    @Value("${backend.url}/refreshtoken")
+    private String REFRESH_TOKEN;
 
     private static final String HOME_URL = "redirect:/home";
     private static final String LOGIN_URL = "redirect:/";
@@ -66,7 +69,7 @@ public class ClientController {
 
     @GetMapping("/home")
     public String home(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
-        if(isRefreshNeeded(request)) {
+        if (isRefreshNeeded(request)) {
             refreshToken(request, response);
         }
         return "home";
@@ -85,7 +88,7 @@ public class ClientController {
 
     @GetMapping("/userPage")
     public String userPage(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
-        if(isRefreshNeeded(request)) {
+        if (isRefreshNeeded(request)) {
             refreshToken(request, response);
         }
         return "userPage";
@@ -93,7 +96,7 @@ public class ClientController {
 
     @GetMapping("/adminPage")
     public String adminPage(HttpServletRequest request, HttpServletResponse response) throws JsonProcessingException {
-        if(isRefreshNeeded(request)) {
+        if (isRefreshNeeded(request)) {
             refreshToken(request, response);
         }
         return "adminPage";
@@ -146,14 +149,14 @@ public class ClientController {
                 jwtAccessTokenCookie.setHttpOnly(true);
                 jwtAccessTokenCookie.setSecure(true);
                 jwtAccessTokenCookie.setPath("/");
-                jwtAccessTokenCookie.setMaxAge(jwtExpirationInMs/1000); //ms to seconds
+                jwtAccessTokenCookie.setMaxAge(jwtExpirationInMs / 1000); //ms to seconds
                 responseHttp.addCookie(jwtAccessTokenCookie);
 
                 Cookie jwtRefreshTokenCookie = new Cookie("refreshToken", refreshtoken);
                 jwtRefreshTokenCookie.setHttpOnly(true);
                 jwtRefreshTokenCookie.setSecure(true);
                 jwtRefreshTokenCookie.setPath("/");
-                jwtRefreshTokenCookie.setMaxAge(refreshExpirationDateInMs/1000); //ms to seconds
+                jwtRefreshTokenCookie.setMaxAge(refreshExpirationDateInMs / 1000); //ms to seconds
                 responseHttp.addCookie(jwtRefreshTokenCookie);
 
                 response = HOME_URL;
@@ -189,7 +192,7 @@ public class ClientController {
         jwtAccessTokenCookie.setHttpOnly(true);
         jwtAccessTokenCookie.setSecure(true);
         jwtAccessTokenCookie.setPath("/");
-        jwtAccessTokenCookie.setMaxAge(jwtExpirationInMs/1000); //ms to seconds
+        jwtAccessTokenCookie.setMaxAge(jwtExpirationInMs / 1000); //ms to seconds
         response.addCookie(jwtAccessTokenCookie);
     }
 

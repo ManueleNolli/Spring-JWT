@@ -17,7 +17,7 @@ A secure basic webpage with spring security functionalities and JWT tokens for a
 ### Structural information
 
 There are two different server:
- - a JWT service server connected with a MySQL DB (backend)
+ - a JWT service server connected with a docker MySQL DB (backend)
  - a Client Server (frontend)
  
  Both server are based on Spring Boot framework (v. 2.7.5) and use the addable plugin 'Spring security'.
